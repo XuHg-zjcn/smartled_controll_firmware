@@ -31,9 +31,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "led.h"
+#include "rs485.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+const char str_test[] = "from RS485";
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -51,18 +53,16 @@ int main(void)
   /* Configure the system clock */
   APP_SystemClockConfig(); 
 
+  RS485_Init();
   LED_Init();
   LED_SetOutputEnable(LED4, 1);
   while (1)
   {
     for(int i=0;i<1024;i++){
       LED_SetOutputCompare(LED4, i);
-      HAL_Delay(10);
+      HAL_Delay(1);
     }
-    for(int i=1024;i>0;i--){
-      LED_SetOutputCompare(LED4, i);
-      HAL_Delay(10);
-    }
+    RS485_Send(str_test, sizeof(str_test));
   }
 }
 
