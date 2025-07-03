@@ -21,6 +21,8 @@ DEV_DIR = PY32F0xx
 COM_DIR = common
 TOOL_DIR = $(DEV_DIR)/tools
 MODEL_D = PY32F003x8
+INCS += -I $(TOP_DIR)/BSP/Inc/
+SDIR += $(TOP_DIR)/BSP/Src/
 
 sinclude $(TOOL_DIR)/conf.mk
 

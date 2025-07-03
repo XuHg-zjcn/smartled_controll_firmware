@@ -30,6 +30,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "led.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -50,8 +51,18 @@ int main(void)
   /* Configure the system clock */
   APP_SystemClockConfig(); 
 
+  LED_Init();
+  LED_SetOutputEnable(LED4, 1);
   while (1)
   {
+    for(int i=0;i<1024;i++){
+      LED_SetOutputCompare(LED4, i);
+      HAL_Delay(10);
+    }
+    for(int i=1024;i>0;i--){
+      LED_SetOutputCompare(LED4, i);
+      HAL_Delay(10);
+    }
   }
 }
 
