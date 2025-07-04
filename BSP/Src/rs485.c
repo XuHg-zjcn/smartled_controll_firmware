@@ -72,6 +72,7 @@ void RS485_Init()
 void RS485_Send(uint8_t *p, uint16_t size)
 {
   HAL_GPIO_WritePin(TR_GPIO_PORT, TR_GPIO_PIN, GPIO_PIN_SET);
+  //TODO: 消除因HAL库耗时在首尾多开启发送的一段时间，会造成电容耦合后明显基线漂移
   HAL_UART_Transmit(&huart, p, size, UART_TIMEOUT);
   HAL_GPIO_WritePin(TR_GPIO_PORT, TR_GPIO_PIN, GPIO_PIN_RESET);
 }

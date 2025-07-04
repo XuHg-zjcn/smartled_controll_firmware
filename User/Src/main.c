@@ -36,6 +36,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 const char str_test[] = "from RS485";
+uint16_t buff[32];
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -62,7 +63,8 @@ int main(void)
       LED_SetOutputCompare(LED4, i);
       HAL_Delay(1);
     }
-    RS485_Send(str_test, sizeof(str_test));
+    Manchester_encode(str_test, buff, sizeof(str_test));
+    RS485_Send(buff, sizeof(str_test)*2);
   }
 }
 
