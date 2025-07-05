@@ -40,6 +40,7 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private user code ---------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
+extern UART_HandleTypeDef huart;
 
 /******************************************************************************/
 /*           Cortex-M0+ Processor Interruption and Exception Handlers          */ 
@@ -81,6 +82,21 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   HAL_IncTick();
+}
+
+void USART1_IRQHandler(void)
+{
+  HAL_UART_IRQHandler(&huart);
+}
+
+void DMA1_Channel1_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(huart.hdmatx);
+}
+
+void DMA1_Channel2_3_IRQHandler(void)
+{
+  HAL_DMA_IRQHandler(huart.hdmarx);
 }
 
 /******************************************************************************/

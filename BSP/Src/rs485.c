@@ -19,44 +19,23 @@
 #include "py32f0xx_hal.h"
 
 
-#define RXD_GPIO_PIN   GPIO_PIN_7
-#define RXD_GPIO_PORT  GPIOB
-#define TXD_GPIO_PIN   GPIO_PIN_14
-#define TXD_GPIO_PORT  GPIOA
 #define TR_GPIO_PIN    GPIO_PIN_5
 #define TR_GPIO_PORT   GPIOB
-#define UART_TIMEOUT   (10)
 
 UART_HandleTypeDef huart;
 
 void RS485_Init()
 {
+  //TXD和RXD脚已在HAL_UART_MspInit函数中初始化
   GPIO_InitTypeDef  GPIO_InitStruct = {0};
 
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_USART1_CLK_ENABLE();
-
   HAL_GPIO_WritePin(TR_GPIO_PORT, TR_GPIO_PIN, GPIO_PIN_RESET); //先设置电平，防止毛刺
   GPIO_InitStruct.Pin       = TR_GPIO_PIN;
   GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull      = GPIO_PULLUP;
   GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(TR_GPIO_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin       = RXD_GPIO_PIN;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull      = GPIO_PULLUP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF0_USART1;
-  HAL_GPIO_Init(RXD_GPIO_PORT, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin       = TXD_GPIO_PIN;
-  GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull      = GPIO_PULLUP;
-  GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF1_USART1;
-  HAL_GPIO_Init(TXD_GPIO_PORT, &GPIO_InitStruct);
 
   huart.Instance = USART1;
   huart.Init.BaudRate     = 500000;
@@ -73,6 +52,10 @@ void RS485_Send(uint8_t *p, uint16_t size)
 {
   HAL_GPIO_WritePin(TR_GPIO_PORT, TR_GPIO_PIN, GPIO_PIN_SET);
   //TODO: 消除因HAL库耗时在首尾多开启发送的一段时间，会造成电容耦合后明显基线漂移
-  HAL_UART_Transmit(&huart, p, size, UART_TIMEOUT);
+  HAL_UART_Transmit_DMA(&huart, p, size);
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
   HAL_GPIO_WritePin(TR_GPIO_PORT, TR_GPIO_PIN, GPIO_PIN_RESET);
 }
