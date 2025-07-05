@@ -23,6 +23,7 @@ TOOL_DIR = $(DEV_DIR)/tools
 MODEL_D = PY32F003x8
 INCS += -I $(TOP_DIR)/BSP/Inc/
 SDIR += $(TOP_DIR)/BSP/Src/
+#COMFLAGS += -DUSE_FULL_LL_DRIVER
 
 sinclude $(TOOL_DIR)/conf.mk
 

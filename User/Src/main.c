@@ -32,6 +32,7 @@
 #include "main.h"
 #include "led.h"
 #include "rs485.h"
+#include "manchester.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -64,7 +65,13 @@ int main(void)
       HAL_Delay(1);
     }
     Manchester_encode(str_test, buff, sizeof(str_test));
-    RS485_Send(buff, sizeof(str_test)*2);
+    RS485_Send((uint8_t *)buff, sizeof(str_test)*2);
+    for(int i=1024;i>0;i--){
+      LED_SetOutputCompare(LED4, i);
+      HAL_Delay(1);
+    }
+    Manchester_encode(str_test, buff, sizeof(str_test));
+    RS485_Send((uint8_t *)buff, sizeof(str_test)*2);
   }
 }
 

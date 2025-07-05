@@ -31,16 +31,21 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "py32f0xx_it.h"
+#include "py32f0xx_ll_usart.h"
+#include "py32f0xx_ll_dma.h"
+#include "py32f0xx_ll_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
+#define TR_LL_GPIO_PIN    LL_GPIO_PIN_5
+#define TR_GPIO_PORT      GPIOB
+#define USARTx            USART1
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private user code ---------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
-extern UART_HandleTypeDef huart;
 
 /******************************************************************************/
 /*           Cortex-M0+ Processor Interruption and Exception Handlers          */ 
@@ -86,17 +91,23 @@ void SysTick_Handler(void)
 
 void USART1_IRQHandler(void)
 {
-  HAL_UART_IRQHandler(&huart);
 }
 
 void DMA1_Channel1_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(huart.hdmatx);
+  if(LL_DMA_IsActiveFlag_TC1(DMA1)){
+    LL_USART_ClearFlag_TC(USARTx);
+    int count = 200;
+    while(!LL_USART_IsActiveFlag_TC(USARTx) && count--);
+    LL_GPIO_ResetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
+
+    LL_DMA_ClearFlag_TC1(DMA1);
+    LL_USART_DisableDMAReq_TX(USARTx);
+  }
 }
 
 void DMA1_Channel2_3_IRQHandler(void)
 {
-  HAL_DMA_IRQHandler(huart.hdmarx);
 }
 
 /******************************************************************************/
