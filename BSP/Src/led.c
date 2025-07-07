@@ -93,6 +93,9 @@ void LED_Init()
 
 void LED_SetOutputEnable(int LEDx, int isEnable)
 {
+  if(LEDx >= LED_COUNT){
+    return;
+  }
   if(isEnable){
     HAL_TIM_PWM_Start(&htim_led, map_led_to_channel[LEDx]);
   }else{
@@ -100,9 +103,40 @@ void LED_SetOutputEnable(int LEDx, int isEnable)
   }
 }
 
+
+uint32_t LED_GetOutputEnable()
+{
+  uint32_t ccer = htim_led.Instance->CCER;
+  uint32_t result = 0;
+  if(ccer&(TIM_CCER_CC1E << (LED1_TIM_CHANNEL & 0x1FU))){
+    result |= (1U<<0);
+  }
+  if(ccer&(TIM_CCER_CC1E << (LED2_TIM_CHANNEL & 0x1FU))){
+    result |= (1U<<1);
+  }
+  if(ccer&(TIM_CCER_CC1E << (LED3_TIM_CHANNEL & 0x1FU))){
+    result |= (1U<<2);
+  }
+  if(ccer&(TIM_CCER_CC1E << (LED4_TIM_CHANNEL & 0x1FU))){
+    result |= (1U<<3);
+  }
+}
+
+
 void LED_SetOutputCompare(int LEDx, uint16_t compare)
 {
+  if(LEDx >= LED_COUNT){
+    return;
+  }
   __HAL_TIM_SET_COMPARE(&htim_led, map_led_to_channel[LEDx], compare);
+}
+
+uint32_t LED_GetOutputCompare(int LEDx)
+{
+  if(LEDx >= LED_COUNT){
+    return 0;
+  }
+  return __HAL_TIM_GET_COMPARE(&htim_led, map_led_to_channel[LEDx]);
 }
 
 void LED_StopAll()

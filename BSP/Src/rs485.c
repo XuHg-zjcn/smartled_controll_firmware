@@ -35,7 +35,9 @@
 #define USARTx            USART1
 #define BAUDRATE          (500000)
 
-UART_HandleTypeDef huart;
+RS485_StatusType rs485_stat = RS485_On_IdleORMute;
+uint8_t buff_rx[64];     //接收缓存区
+volatile uint32_t buff_rxlen = 0; //接收完成时存放接收长度,缓存区内容不再使用时置0
 
 /******************************************
  * 参考代码:
@@ -78,6 +80,7 @@ void RS485_Init()
   //LL_USART_SetBaudRate(USARTx, 8000000, 115200, LL_USART_OVERSAMPLING_16); //该函数计算波特率有误
   USARTx->BRR = (SystemCoreClock + BAUDRATE/2)/BAUDRATE;
   LL_USART_ConfigAsyncMode(USARTx);
+  LL_USART_EnableIT_RXNE(USARTx);
   LL_USART_Enable(USARTx);
 
   //配置DMA通道1, 用于USART发送
@@ -102,25 +105,94 @@ void RS485_Init()
   LL_SYSCFG_SetDMARemap_CH1(LL_SYSCFG_DMA_MAP_USART1_TX);
   LL_SYSCFG_SetDMARemap_CH2(LL_SYSCFG_DMA_MAP_USART1_RX);
 
+  LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_1, LL_USART_DMA_GetRegAddr(USARTx));
+  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
+
+  LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_2, (uint32_t)buff_rx);
+  LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_2, LL_USART_DMA_GetRegAddr(USARTx));
+  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, sizeof(buff_rx));
+  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_2);
+
   NVIC_SetPriority(DMA1_Channel1_IRQn, 1);
   NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
   NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1);
   NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+
+  NVIC_SetPriority(USART1_IRQn, 0);
+  NVIC_EnableIRQ(USART1_IRQn);
 }
 
-void RS485_Send(uint8_t *p, uint16_t size)
+int RS485_Send(uint8_t *p, uint16_t size)
 {
-  //TODO: 检查是否正在传输
+  if(rs485_stat != RS485_On_IdleORMute){
+    return 1;
+  }
+  rs485_stat = RS485_On_Trasmit;
   LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_1);
   LL_DMA_ClearFlag_GI1(DMA1);
   LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_1, (uint32_t)p);
   LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_1, LL_USART_DMA_GetRegAddr(USARTx));
   LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, size);
-  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
 
   LL_USART_ClearFlag_TC(USARTx);
   LL_GPIO_SetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
   LL_USART_EnableDMAReq_TX(USARTx);
+  //完成发送后在`DMA1_Channel1_IRQHandler`拉低TR_GPIO
+  return 0;
+}
+
+void USART1_IRQHandler()
+{
+  if(LL_USART_IsActiveFlag_RXNE(USARTx)){
+    uint8_t byte = LL_USART_ReceiveData8(USARTx);
+    if((rs485_stat == RS485_On_IdleORMute) && (byte == RS485_ADDR) && (buff_rxlen == 0)){
+      rs485_stat = RS485_On_Recevice;
+      LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+      LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, sizeof(buff_rx));
+      LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
+      LL_USART_EnableDMAReq_RX(USARTx);
+      LL_USART_DisableIT_RXNE(USARTx);
+      LL_USART_EnableIT_IDLE(USARTx);
+    }else{
+      LL_USART_RequestEnterMuteMode(USARTx);
+    }
+  }
+  if(LL_USART_IsActiveFlag_IDLE(USARTx)){
+    uint8_t byte = LL_USART_ReceiveData8(USARTx); //清除IDLE位
+    LL_USART_DisableDMAReq_RX(USARTx);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    buff_rxlen = sizeof(buff_rx) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_2);
+    rs485_stat = RS485_On_IdleORMute;
+    LL_USART_EnableIT_RXNE(USARTx);
+  }
+}
+
+void DMA1_Channel1_IRQHandler()
+{
+  if(LL_DMA_IsActiveFlag_TC1(DMA1)){
+    LL_USART_ClearFlag_TC(USARTx);
+    int count = 200;
+    while(!LL_USART_IsActiveFlag_TC(USARTx) && count--);
+    LL_GPIO_ResetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
+
+    LL_DMA_ClearFlag_TC1(DMA1);
+    LL_USART_DisableDMAReq_TX(USARTx);
+    rs485_stat = RS485_On_IdleORMute;
+  }
+}
+
+void DMA_Channel2_3_IRQHandler()
+{
+  if(LL_DMA_IsActiveFlag_TC2(DMA1)){
+    //接收缓存区已满
+    LL_DMA_ClearFlag_TC2(DMA1);
+    LL_USART_DisableDMAReq_RX(USARTx);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+    buff_rxlen = sizeof(buff_rx);
+    rs485_stat = RS485_On_IdleORMute;
+    LL_USART_RequestEnterMuteMode(USARTx);
+    LL_USART_EnableIT_RXNE(USARTx);
+  }
 }

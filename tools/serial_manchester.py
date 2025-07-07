@@ -16,6 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #######################################################################
 import serial
+import time
+
 
 tab_enc = [
   0xaa, 0xa9, 0xa6, 0xa5,
@@ -52,8 +54,12 @@ devpath = '/dev/ttyUSB0'
 baudrate = 500000
 s = serial.Serial(devpath, baudrate, timeout=0.1)
 
+i = 0
 while True:
+    compval = (i%32)*(i%32)
+    cmd = b'\x13' + int.to_bytes(0xc000+compval, 2, 'little')
+    s.write(b'\xac' + manchester_enc(cmd))
     data = s.read(64)
-    if len(data) == 0:
-        continue
-    print(manchester_dec(data).decode())
+    if len(data) != 0:
+        print(manchester_dec(data).decode())
+    i += 1

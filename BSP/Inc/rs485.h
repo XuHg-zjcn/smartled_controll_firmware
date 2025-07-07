@@ -19,8 +19,17 @@
 #define RS485_H
 
 #include <stdint.h>
+#include "py32f0xx.h"
+
+#define RS485_ADDR  (0xAC)
+
+typedef enum{
+  RS485_On_IdleORMute,
+  RS485_On_Trasmit,
+  RS485_On_Recevice,
+}RS485_StatusType;
 
 void RS485_Init();
-void RS485_Send(uint8_t *p, uint16_t size);
+int RS485_Send(uint8_t *p, uint16_t size);
 
 #endif

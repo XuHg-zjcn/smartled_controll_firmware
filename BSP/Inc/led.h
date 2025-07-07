@@ -25,10 +25,13 @@
 #define LED2  LED(2)
 #define LED3  LED(3)
 #define LED4  LED(4)
+#define LED_COUNT (4)
 
-void LED_Init();
-void LED_SetOutputEnable();
-void LED_SetOutputCompare(int LEDx, uint16_t compare);
-void LED_StopAll();
+void     LED_Init();
+void     LED_SetOutputEnable(int LEDx, int isEnable);
+uint32_t LED_GetOutputEnable();
+void     LED_SetOutputCompare(int LEDx, uint16_t compare);
+uint32_t LED_GetOutputCompare(int LEDx);
+void     LED_StopAll();
 
 #endif

@@ -33,11 +33,17 @@
 #include "led.h"
 #include "rs485.h"
 #include "manchester.h"
+#include "command.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 const char str_test[] = "from RS485";
-uint16_t buff[32];
+uint8_t buff_tx_encode[64];
+uint8_t buff_rx_decode[32];
+extern uint8_t buff_rx[64];
+extern volatile uint32_t buff_rxlen;
+extern uint8_t resp_buff[MAXSIZE_RESP];
+extern volatile uint32_t resp_len;
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -58,20 +64,21 @@ int main(void)
   RS485_Init();
   LED_Init();
   LED_SetOutputEnable(LED4, 1);
+  uint32_t i=0;
   while (1)
   {
-    for(int i=0;i<1024;i++){
-      LED_SetOutputCompare(LED4, i);
-      HAL_Delay(1);
+    while(buff_rxlen == 0);
+    uint32_t rxlen = buff_rxlen;
+    Manchester_decode(buff_rx+1, buff_rx_decode, rxlen/2);
+    buff_rxlen = 0; //接收缓存区的内容不再使用了，可以接收新数据了
+    process_cmd(buff_rx_decode, rxlen/2);
+    uint32_t resp_len_ = resp_len;
+    if(resp_len_ > 0){
+      Manchester_encode(resp_buff, buff_tx_encode, resp_len_);
+      RS485_Send(buff_tx_encode, resp_len_*2);
     }
-    Manchester_encode(str_test, buff, sizeof(str_test));
-    RS485_Send((uint8_t *)buff, sizeof(str_test)*2);
-    for(int i=1024;i>0;i--){
-      LED_SetOutputCompare(LED4, i);
-      HAL_Delay(1);
-    }
-    Manchester_encode(str_test, buff, sizeof(str_test));
-    RS485_Send((uint8_t *)buff, sizeof(str_test)*2);
+    /*i += rxlen;
+    LED_SetOutputCompare(LED4, (i%32)*(i%32));*/
   }
 }
 

@@ -1,5 +1,5 @@
 /************************************************************************
- * 曼彻斯特编码库
+ * 命令解析
  * Copyright (C) 2025  Xu Ruijun
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  ************************************************************************/
-#ifndef MANCHESTER_H
-#define MANCHESTER_H
+#ifndef COMMAND_H
+#define COMMAND_H
 
 #include <stdint.h>
 
-void Manchester_encode(const uint8_t *pIn, uint8_t *pOut, uint32_t size);
-void Manchester_decode(const uint8_t *pIn, uint8_t *pOut, uint32_t size);
+#define MAXSIZE_RESP (32)
+
+uint32_t process_cmd(uint8_t *p, int32_t size);
 
 #endif

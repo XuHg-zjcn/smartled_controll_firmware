@@ -34,13 +34,11 @@
 #include "py32f0xx_ll_usart.h"
 #include "py32f0xx_ll_dma.h"
 #include "py32f0xx_ll_gpio.h"
+#include "rs485.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define TR_LL_GPIO_PIN    LL_GPIO_PIN_5
-#define TR_GPIO_PORT      GPIOB
-#define USARTx            USART1
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -89,26 +87,17 @@ void SysTick_Handler(void)
   HAL_IncTick();
 }
 
-void USART1_IRQHandler(void)
+/*void USART1_IRQHandler(void)
 {
 }
 
 void DMA1_Channel1_IRQHandler(void)
 {
-  if(LL_DMA_IsActiveFlag_TC1(DMA1)){
-    LL_USART_ClearFlag_TC(USARTx);
-    int count = 200;
-    while(!LL_USART_IsActiveFlag_TC(USARTx) && count--);
-    LL_GPIO_ResetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
-
-    LL_DMA_ClearFlag_TC1(DMA1);
-    LL_USART_DisableDMAReq_TX(USARTx);
-  }
 }
 
 void DMA1_Channel2_3_IRQHandler(void)
 {
-}
+}*/
 
 /******************************************************************************/
 /* PY32F0xx Peripheral Interrupt Handlers                                     */

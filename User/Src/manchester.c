@@ -25,21 +25,22 @@ static const uint8_t tab_enc[16] = {
 };
 
 //使用uint32_t作为变量，避免编译器输出uxth,uxtb等指令
-void Manchester_encode(const uint8_t *pIn, uint16_t *pOut, uint32_t size)
+void Manchester_encode(const uint8_t *pIn, uint8_t *pOut, uint32_t size)
 {
   while(size--){
     uint8_t byte = *pIn++;
-    *pOut++ = tab_enc[byte&0x0f] | (tab_enc[(byte>>4)&0x0f])<<8;
+    *pOut++ = tab_enc[byte&0x0f];
+    *pOut++ = tab_enc[(byte>>4)&0x0f];
   }
 }
 
 //TODO: 使用查表法加速
-uint32_t Manchester_decode(const uint16_t *pIn, uint8_t *pOut, uint32_t size)
+uint32_t Manchester_decode(const uint8_t *pIn, uint8_t *pOut, uint32_t size)
 {
   uint32_t errcount = 0;
   while(size--){
     uint32_t byte = 0;
-    uint16_t indata = *pIn++;
+    uint16_t indata = (*pIn++) | ((*pIn++)<<8);
     if((indata ^ (indata>>1))&0x5555 != 0x5555){
       errcount++;
     }
