@@ -19,107 +19,46 @@
 #include <stdint.h>
 #include <string.h>
 #include "led.h"
+#include "modbus.h"
 
-const uint8_t strinfo[] = "smartled controll v0.1";
 uint8_t resp_buff[MAXSIZE_RESP];
-uint32_t resp_len = 0;
 
-typedef struct{
-  uint8_t code;
-  uint8_t min_remain;
-  uint32_t (*func)(uint8_t *p, uint32_t remain);
-}CmdType;
-
-uint32_t CmdFunc_GetInfo(uint8_t *p, uint32_t remain)
+int MB_ReadCoilCB_single(uint16_t addr)
 {
-  if(resp_len + strlen(strinfo)+1 <= MAXSIZE_RESP){
-    strcpy(resp_buff+resp_len, strinfo);
-    resp_len += strlen(strinfo)+1;
+  if(addr >= 4){
+    return MB_ERR_ILL_ADDR;
   }
+  uint32_t oldStat = LED_GetOutputEnable();
+  return (oldStat&(1U<<addr))?(1):(0);
+}
+
+int MB_WriteCoilCB_single(uint16_t addr, int state)
+{
+  if(addr >= 4){
+    return MB_ERR_ILL_ADDR;
+  }
+  LED_SetOutputEnable(addr, state);
   return 0;
 }
 
-uint32_t CmdFunc_SetOnOff(uint8_t *p, uint32_t remain)
+int MB_ReadHoldCB_single(uint16_t addr, uint16_t value)
 {
-  uint8_t mode = *p;
-  uint32_t oldStat = LED_GetOutputEnable();
-  uint32_t newStat = (oldStat&(mode&0x0f)) | (((~oldStat)&0x0f)&(mode>>4));
-  uint32_t charge = oldStat ^ newStat;
-  for(int i=0;i<4;i++){
-    if(charge & (1U<<i)){
-      LED_SetOutputEnable(i, (newStat&(1U<<i))?1:0);
-    }
+  if(addr >= 4){
+    return MB_ERR_ILL_ADDR;
   }
-  return 1;
+  return LED_GetOutputCompare(addr);
 }
 
-uint32_t CmdFunc_GetOnOff(uint8_t *p, uint32_t remain)
+int MB_WriteHoldCB_single(uint16_t addr, uint16_t value)
 {
-  uint32_t oldStat = LED_GetOutputEnable();
-  if(resp_len + 1 <= MAXSIZE_RESP){
-    resp_buff[resp_len++] = oldStat & 0xff;
+  if(addr >= 4){
+    return MB_ERR_ILL_ADDR;
   }
+  LED_SetOutputCompare(addr, value);
   return 0;
 }
-
-uint32_t CmdFunc_SetPWM(uint8_t *p, uint32_t remain)
-{
-  uint16_t data = (*p++)|((*p++)<<8);
-  uint16_t compval = data & 0x3fff;
-  uint32_t id = data>>14;
-  LED_SetOutputCompare(id, compval);
-  return 2;
-}
-
-uint32_t CmdFunc_GetPWM(uint8_t *p, uint32_t remain)
-{
-  uint8_t id = *p;
-  uint32_t compval;
-  compval = LED_GetOutputCompare(id);
-  if(resp_len + 2 <= MAXSIZE_RESP){
-    resp_buff[resp_len++] = compval & 0xff;
-    resp_buff[resp_len++] = (compval>>8) & 0xff;
-  }
-  return 1;
-}
-
-CmdType CmdArr[] = {
-  {0x00, 0, CmdFunc_GetInfo},
-  {0x11, 1, CmdFunc_SetOnOff},
-  {0x12, 0, CmdFunc_GetOnOff},
-  {0x13, 2, CmdFunc_SetPWM},
-  {0x14, 1, CmdFunc_GetPWM},
-};
 
 uint32_t process_cmd(uint8_t *p, int32_t size)
 {
-  resp_len = 0;
-  while(size > 0){ //size使用有符号类型，防止下溢后继续循环
-    uint32_t code = *p++;
-    size--;
-    uint32_t a = 0;
-    uint32_t cmd_i = -1;
-    uint32_t b = sizeof(CmdArr)/sizeof(CmdType)-1;
-    while(a<=b){
-      uint32_t mid = (a+b)/2;
-      if(CmdArr[mid].code < code){
-	a = mid+1;
-      }else if(CmdArr[mid].code > code){
-	b = mid-1;
-      }else{
-	cmd_i = mid;
-        break;
-      }
-    }
-    if(cmd_i == -1){
-      //未知命令
-      return 1;
-    }
-    if(size >= CmdArr[cmd_i].min_remain){
-      uint32_t used = CmdArr[cmd_i].func(p, size);
-      p += used;
-      size -= used;
-    }
-  }
-  return 0;
+  return MB_ProcessRecvWithCRC(p, size, resp_buff);
 }

@@ -17,7 +17,7 @@
 #######################################################################
 import serial
 import time
-
+import crc
 
 tab_enc = [
   0xaa, 0xa9, 0xa6, 0xa5,
@@ -32,6 +32,8 @@ dict_dec = {
   0x6a:0x8, 0x69:0x9, 0x66:0xa, 0x65:0xb,
   0x5a:0xc, 0x59:0xd, 0x56:0xe, 0x55:0xf
 }
+
+crc_calc = crc.Calculator(crc.Crc16.MODBUS)
 
 def manchester_enc(data):
     ba = bytearray()
@@ -57,8 +59,10 @@ s = serial.Serial(devpath, baudrate, timeout=0.1)
 i = 0
 while True:
     compval = (i%32)*(i%32)
-    cmd = b'\x13' + int.to_bytes(0xc000+compval, 2, 'little')
-    s.write(b'\xac' + manchester_enc(cmd))
+    cmd = b'\x01\x06\x00\x03' + int.to_bytes(compval, 2, 'big')
+    checksum = crc_calc.checksum(cmd)
+    cmd_withcrc = cmd + int.to_bytes(checksum, 2, 'little')
+    s.write(b'\xac' + manchester_enc(cmd_withcrc))
     data = s.read(64)
     if len(data) != 0:
         print(manchester_dec(data).decode())
