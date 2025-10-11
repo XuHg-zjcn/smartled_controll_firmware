@@ -32,6 +32,7 @@
 #include "main.h"
 #include "led.h"
 #include "rs485.h"
+#include "adc.h"
 #include "manchester.h"
 #include "command.h"
 
@@ -61,8 +62,12 @@ int main(void)
   APP_SystemClockConfig(); 
 
   RS485_Init();
+  ADC_Init();
   LED_Init();
   LED_SetOutputEnable(LED4, 1);
+  LED_SetOutputCompare(LED4, 512);
+  LED_SetOutputEnable(LED2, 1);
+  LED_SetOutputCompare(LED2, 512);
   uint32_t i=0;
   while (1)
   {

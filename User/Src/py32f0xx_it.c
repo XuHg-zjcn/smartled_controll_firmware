@@ -35,6 +35,7 @@
 #include "py32f0xx_ll_dma.h"
 #include "py32f0xx_ll_gpio.h"
 #include "rs485.h"
+#include "adc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/

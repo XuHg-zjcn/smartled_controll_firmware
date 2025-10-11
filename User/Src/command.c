@@ -22,6 +22,7 @@
 #include "modbus.h"
 
 uint8_t resp_buff[MAXSIZE_RESP];
+extern uint16_t adc_isum, adc_vsum;
 
 int MB_ReadCoilCB_single(uint16_t addr)
 {
@@ -41,7 +42,7 @@ int MB_WriteCoilCB_single(uint16_t addr, int state)
   return 0;
 }
 
-int MB_ReadHoldCB_single(uint16_t addr, uint16_t value)
+int MB_ReadHoldCB_single(uint16_t addr)
 {
   if(addr >= 4){
     return MB_ERR_ILL_ADDR;
@@ -56,6 +57,18 @@ int MB_WriteHoldCB_single(uint16_t addr, uint16_t value)
   }
   LED_SetOutputCompare(addr, value);
   return 0;
+}
+
+int MB_ReadInputCB_single(uint16_t addr)
+{
+  switch(addr){
+  case 0x0010:
+    return adc_isum;
+  case 0x0011:
+    return adc_vsum;
+  default:
+    return MB_ERR_ILL_ADDR;
+  }
 }
 
 uint32_t process_cmd(uint8_t *p, int32_t size)

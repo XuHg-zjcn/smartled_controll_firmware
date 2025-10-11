@@ -143,6 +143,7 @@ int RS485_Send(uint8_t *p, uint16_t size)
   return 0;
 }
 
+//TODO: 此处应该改为回调函数，中断函数在py32f0xx_it.c中定义
 void USART1_IRQHandler()
 {
   if(LL_USART_IsActiveFlag_RXNE(USARTx)){
@@ -194,5 +195,13 @@ void DMA_Channel2_3_IRQHandler()
     rs485_stat = RS485_On_IdleORMute;
     LL_USART_RequestEnterMuteMode(USARTx);
     LL_USART_EnableIT_RXNE(USARTx);
+  }
+  if(LL_DMA_IsActiveFlag_TC3(DMA1)){
+    LL_DMA_ClearFlag_TC3(DMA1);
+    ADC_DMA_TC_Callback();
+  }
+  if(LL_DMA_IsActiveFlag_HT3(DMA1)){
+    LL_DMA_ClearFlag_HT3(DMA1);
+    ADC_DMA_HT_Callback();
   }
 }
