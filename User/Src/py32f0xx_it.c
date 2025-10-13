@@ -88,23 +88,38 @@ void SysTick_Handler(void)
   HAL_IncTick();
 }
 
-/*void USART1_IRQHandler(void)
-{
-}
-
-void DMA1_Channel1_IRQHandler(void)
-{
-}
-
-void DMA1_Channel2_3_IRQHandler(void)
-{
-}*/
-
 /******************************************************************************/
 /* PY32F0xx Peripheral Interrupt Handlers                                     */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file.                                          */
 /******************************************************************************/
+/*void USART1_IRQHandler(void)
+{
+}*/
+
+void DMA1_Channel1_IRQHandler(void)
+{
+  if(LL_DMA_IsActiveFlag_TC1(DMA1)){
+    LL_DMA_ClearFlag_TC1(DMA1);
+    USART_TX_DMA_TC_Callback();
+  }
+}
+
+void DMA1_Channel2_3_IRQHandler(void)
+{
+  if(LL_DMA_IsActiveFlag_TC2(DMA1)){
+    LL_DMA_ClearFlag_TC2(DMA1);
+    USART_RX_DMA_TC_Callback();
+  }
+  if(LL_DMA_IsActiveFlag_TC3(DMA1)){
+    LL_DMA_ClearFlag_TC3(DMA1);
+    ADC_DMA_TC_Callback();
+  }
+  if(LL_DMA_IsActiveFlag_HT3(DMA1)){
+    LL_DMA_ClearFlag_HT3(DMA1);
+    ADC_DMA_HT_Callback();
+  }
+}
 
 /************************ (C) COPYRIGHT Puya *****END OF FILE******************/

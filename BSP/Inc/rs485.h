@@ -31,5 +31,7 @@ typedef enum{
 
 void RS485_Init();
 int RS485_Send(uint8_t *p, uint16_t size);
+void USART_TX_DMA_TC_Callback();
+void USART_RX_DMA_TC_Callback();
 
 #endif
