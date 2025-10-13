@@ -17,7 +17,7 @@
 #######################################################################
 import serial
 import time
-import crc
+import crcmod
 
 tab_enc = [
   0xaa, 0xa9, 0xa6, 0xa5,
@@ -33,7 +33,7 @@ dict_dec = {
   0x5a:0xc, 0x59:0xd, 0x56:0xe, 0x55:0xf
 }
 
-crc_calc = crc.Calculator(crc.Crc16.MODBUS)
+crc_calc = crcmod.predefined.mkPredefinedCrcFun('Modbus')
 
 def manchester_enc(data):
     ba = bytearray()
@@ -56,14 +56,22 @@ devpath = '/dev/ttyUSB0'
 baudrate = 500000
 s = serial.Serial(devpath, baudrate, timeout=0.1)
 
+# 生成6个元素的等差数列
+preset_pwm = []
+for i in range(6):
+    preset_pwm.append(round(1024/2.25**(5-i)))
+print(preset_pwm)
+
 i = 0
 while True:
-    compval = (i%32)*(i%32)
-    cmd = b'\x01\x06\x00\x03' + int.to_bytes(compval, 2, 'big')
-    checksum = crc_calc.checksum(cmd)
+    compval = preset_pwm[i%len(preset_pwm)]
+    print(compval)
+    cmd = b'\x01\x06\x00\x01' + int.to_bytes(compval, 2, 'big')
+    checksum = crc_calc(cmd)
     cmd_withcrc = cmd + int.to_bytes(checksum, 2, 'little')
     s.write(b'\xac' + manchester_enc(cmd_withcrc))
     data = s.read(64)
     if len(data) != 0:
         print(manchester_dec(data).decode())
     i += 1
+    time.sleep(2)

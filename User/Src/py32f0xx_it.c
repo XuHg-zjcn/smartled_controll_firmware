@@ -34,8 +34,10 @@
 #include "py32f0xx_ll_usart.h"
 #include "py32f0xx_ll_dma.h"
 #include "py32f0xx_ll_gpio.h"
+#include "py32f0xx_ll_exti.h"
 #include "rs485.h"
 #include "adc.h"
+#include "key.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -119,6 +121,14 @@ void DMA1_Channel2_3_IRQHandler(void)
   if(LL_DMA_IsActiveFlag_HT3(DMA1)){
     LL_DMA_ClearFlag_HT3(DMA1);
     ADC_DMA_HT_Callback();
+  }
+}
+
+void EXTI4_15_IRQHandler(void)
+{
+  if(LL_EXTI_IsActiveFlag(KEY_LL_EXTI_LINE)){
+    LL_EXTI_ClearFlag(KEY_LL_EXTI_LINE);
+    Key_EXTI_Callback();
   }
 }
 

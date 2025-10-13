@@ -29,8 +29,11 @@ int MB_ReadCoilCB_single(uint16_t addr)
   if(addr >= 4){
     return MB_ERR_ILL_ADDR;
   }
-  uint32_t oldStat = LED_GetOutputEnable();
-  return (oldStat&(1U<<addr))?(1):(0);
+  if(LED_GetOutputEnable(addr)){
+    return 1;
+  }else{
+    return 0;
+  }
 }
 
 int MB_WriteCoilCB_single(uint16_t addr, int state)

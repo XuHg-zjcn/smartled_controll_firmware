@@ -29,7 +29,7 @@
 
 void     LED_Init();
 void     LED_SetOutputEnable(int LEDx, int isEnable);
-uint32_t LED_GetOutputEnable();
+int      LED_GetOutputEnable(int LEDx);
 void     LED_SetOutputCompare(int LEDx, uint16_t compare);
 uint32_t LED_GetOutputCompare(int LEDx);
 void     LED_StopAll();

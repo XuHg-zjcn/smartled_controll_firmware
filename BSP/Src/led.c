@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  ************************************************************************/
 #include "led.h"
+#include "py32f0xx_ll_tim.h"
 #include "py32f0xx.h"
 
 //此处LEDx编号是PCB上印刷的粗体数字
@@ -33,6 +34,10 @@
 #define LED3_TIM_CHANNEL  TIM_CHANNEL_1
 #define LED4_TIM_CHANNEL  TIM_CHANNEL_4
 
+#define TIM_CHANNEL_HAL_TO_LL(x)  (1<<(x))
+#define LEDx_TO_LL_TIM_CHANNEL(x) (TIM_CHANNEL_HAL_TO_LL(map_led_to_channel[x]))
+#define LEDx_TO_HAL_TIM_CHANNEL(x) (map_led_to_channel[x])
+
 uint32_t map_led_to_channel[4] = {
   LED1_TIM_CHANNEL,
   LED2_TIM_CHANNEL,
@@ -46,7 +51,7 @@ uint32_t map_led_to_channel[4] = {
 TIM_HandleTypeDef   htim_led;
 TIM_OC_InitTypeDef  sPWMConfig = {0};
 
-
+//TODO: 此文件全部代码改为LL库
 void LED_Init()
 {
     GPIO_InitTypeDef    GPIO_InitStruct = {0};
@@ -97,28 +102,21 @@ void LED_SetOutputEnable(int LEDx, int isEnable)
     return;
   }
   if(isEnable){
-    HAL_TIM_PWM_Start(&htim_led, map_led_to_channel[LEDx]);
+    LL_TIM_OC_SetMode(TIM1, LEDx_TO_LL_TIM_CHANNEL(LEDx), LL_TIM_OCMODE_PWM1);
+    HAL_TIM_PWM_Start(&htim_led, LEDx_TO_HAL_TIM_CHANNEL(LEDx));
   }else{
-    HAL_TIM_PWM_Stop(&htim_led, map_led_to_channel[LEDx]);
+    LL_TIM_OC_SetMode(TIM1, LEDx_TO_LL_TIM_CHANNEL(LEDx), LL_TIM_OCMODE_INACTIVE);
   }
 }
 
 
-uint32_t LED_GetOutputEnable()
+int LED_GetOutputEnable(int LEDx)
 {
-  uint32_t ccer = htim_led.Instance->CCER;
-  uint32_t result = 0;
-  if(ccer&(TIM_CCER_CC1E << (LED1_TIM_CHANNEL & 0x1FU))){
-    result |= (1U<<0);
-  }
-  if(ccer&(TIM_CCER_CC1E << (LED2_TIM_CHANNEL & 0x1FU))){
-    result |= (1U<<1);
-  }
-  if(ccer&(TIM_CCER_CC1E << (LED3_TIM_CHANNEL & 0x1FU))){
-    result |= (1U<<2);
-  }
-  if(ccer&(TIM_CCER_CC1E << (LED4_TIM_CHANNEL & 0x1FU))){
-    result |= (1U<<3);
+  uint32_t mode = LL_TIM_OC_GetMode(TIM1, LEDx_TO_LL_TIM_CHANNEL(LEDx));
+  if(mode == LL_TIM_OCMODE_PWM1){
+    return 1;
+  }else{
+    return 0;
   }
 }
 
@@ -128,7 +126,7 @@ void LED_SetOutputCompare(int LEDx, uint16_t compare)
   if(LEDx >= LED_COUNT){
     return;
   }
-  __HAL_TIM_SET_COMPARE(&htim_led, map_led_to_channel[LEDx], compare);
+  __HAL_TIM_SET_COMPARE(&htim_led, LEDx_TO_HAL_TIM_CHANNEL(LEDx), compare);
 }
 
 uint32_t LED_GetOutputCompare(int LEDx)
@@ -136,7 +134,7 @@ uint32_t LED_GetOutputCompare(int LEDx)
   if(LEDx >= LED_COUNT){
     return 0;
   }
-  return __HAL_TIM_GET_COMPARE(&htim_led, map_led_to_channel[LEDx]);
+  return __HAL_TIM_GET_COMPARE(&htim_led, LEDx_TO_HAL_TIM_CHANNEL(LEDx));
 }
 
 void LED_StopAll()

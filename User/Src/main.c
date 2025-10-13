@@ -63,6 +63,7 @@ int main(void)
 
   RS485_Init();
   ADC_Init();
+  Key_Init();
   LED_Init();
   LED_SetOutputEnable(LED4, 1);
   LED_SetOutputCompare(LED4, 512);
