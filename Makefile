@@ -22,7 +22,9 @@ COM_DIR = common
 TOOL_DIR = $(DEV_DIR)/tools
 MODEL_D = PY32F003x8
 INCS += -I $(TOP_DIR)/BSP/Inc/
+INCS += -I $(TOP_DIR)/func32/
 SDIR += $(TOP_DIR)/BSP/Src/
+CSRC += $(TOP_DIR)/func32/func32.c
 #COMFLAGS += -DUSE_FULL_LL_DRIVER
 
 sinclude $(TOOL_DIR)/conf.mk

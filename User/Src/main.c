@@ -35,6 +35,7 @@
 #include "adc.h"
 #include "manchester.h"
 #include "command.h"
+#include "key.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/

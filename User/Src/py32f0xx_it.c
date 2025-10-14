@@ -38,6 +38,7 @@
 #include "rs485.h"
 #include "adc.h"
 #include "key.h"
+#include "brigress.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -88,6 +89,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   HAL_IncTick();
+  Brigress_Tick_Callback();
 }
 
 /******************************************************************************/
