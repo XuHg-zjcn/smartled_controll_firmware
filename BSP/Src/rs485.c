@@ -149,9 +149,9 @@ int RS485_Send(uint8_t *p, uint16_t size)
 //TODO: 此处应该改为回调函数，中断函数在py32f0xx_it.c中定义
 void USART1_IRQHandler()
 {
-  if(LL_USART_IsActiveFlag_RXNE(USARTx)){
+  if(LL_USART_IsEnabledIT_RXNE(USARTx) && LL_USART_IsActiveFlag_RXNE(USARTx)){
     uint8_t byte = LL_USART_ReceiveData8(USARTx);
-    if((rs485_stat == RS485_On_IdleORMute) && (byte == RS485_ADDR) && (buff_rxlen == 0)){
+    if((rs485_stat == RS485_On_Addr1) && (byte == RS485_ADDR2) && (buff_rxlen == 0)){
       rs485_stat = RS485_On_Recevice;
       LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_RX);
       LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_RX, sizeof(buff_rx));
@@ -159,11 +159,14 @@ void USART1_IRQHandler()
       LL_USART_EnableDMAReq_RX(USARTx);
       LL_USART_DisableIT_RXNE(USARTx);
       LL_USART_EnableIT_IDLE(USARTx);
+    }else if((rs485_stat == RS485_On_IdleORMute) && (byte == RS485_ADDR1)){
+      rs485_stat = RS485_On_Addr1;
     }else{
+      rs485_stat = RS485_On_IdleORMute;
       LL_USART_RequestEnterMuteMode(USARTx);
     }
   }
-  if(LL_USART_IsActiveFlag_IDLE(USARTx)){
+  if(LL_USART_IsEnabledIT_IDLE(USARTx) && LL_USART_IsActiveFlag_IDLE(USARTx)){
     uint8_t byte = LL_USART_ReceiveData8(USARTx); //清除IDLE位
     LL_USART_DisableDMAReq_RX(USARTx);
     LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_RX);

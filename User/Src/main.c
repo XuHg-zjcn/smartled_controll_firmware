@@ -63,11 +63,9 @@ int main(void)
   APP_SystemClockConfig(); 
 
   RS485_Init();
-  ADC_Init();
+  //ADC_Init();
   Key_Init();
   LED_Init();
-  LED_SetOutputEnable(LED4, 1);
-  LED_SetOutputCompare(LED4, 512);
   LED_SetOutputEnable(LED2, 1);
   LED_SetOutputCompare(LED2, 512);
   uint32_t i=0;
@@ -75,9 +73,11 @@ int main(void)
   {
     while(buff_rxlen == 0);
     uint32_t rxlen = buff_rxlen;
-    Manchester_decode(buff_rx+1, buff_rx_decode, rxlen/2);
+    buff_rxlen = 0;
+    Manchester_decode(buff_rx+1, buff_rx_decode+1, rxlen/2);
     buff_rxlen = 0; //接收缓存区的内容不再使用了，可以接收新数据了
-    uint32_t resp_len_ = process_cmd(buff_rx_decode, rxlen/2);
+    buff_rx_decode[0] = RS485_ADDR;
+    uint32_t resp_len_ = process_cmd(buff_rx_decode, rxlen/2+1);
     if(resp_len_ > 0){
       Manchester_encode(resp_buff, buff_tx_encode, resp_len_);
       RS485_Send(buff_tx_encode, resp_len_*2);

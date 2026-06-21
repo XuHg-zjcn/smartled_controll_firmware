@@ -53,7 +53,7 @@ def manchester_dec(data):
     return bytes(ba)
 
 devpath = '/dev/ttyUSB0'
-baudrate = 500000
+baudrate = 250000
 s = serial.Serial(devpath, baudrate, timeout=0.1)
 
 # 生成6个元素的等差数列
@@ -69,9 +69,9 @@ while True:
     cmd = b'\x01\x06\x00\x01' + int.to_bytes(compval, 2, 'big')
     checksum = crc_calc(cmd)
     cmd_withcrc = cmd + int.to_bytes(checksum, 2, 'little')
-    s.write(b'\xac' + manchester_enc(cmd_withcrc))
+    s.write(cmd_withcrc)
     data = s.read(64)
     if len(data) != 0:
-        print(manchester_dec(data).decode())
+        print(data.hex())
     i += 1
     time.sleep(2)
