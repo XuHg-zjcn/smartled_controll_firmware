@@ -39,6 +39,7 @@
 #include "adc.h"
 #include "key.h"
 #include "brigress.h"
+#include "trigger.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -90,6 +91,7 @@ void SysTick_Handler(void)
 {
   HAL_IncTick();
   Brigress_Tick_Callback();
+  Trigger_Tick_Callback();
 }
 
 /******************************************************************************/
@@ -123,6 +125,18 @@ void DMA1_Channel2_3_IRQHandler(void)
   if(LL_DMA_IsActiveFlag_HT3(DMA1)){
     LL_DMA_ClearFlag_HT3(DMA1);
     ADC_DMA_HT_Callback();
+  }
+}
+
+void EXTI0_1_IRQHandler(void)
+{
+  if(LL_EXTI_IsActiveFlag(TRIG1_LL_EXTI_LINE)){
+    LL_EXTI_ClearFlag(TRIG1_LL_EXTI_LINE);
+    Trigger_Callback(0);
+  }
+  if(LL_EXTI_IsActiveFlag(TRIG2_LL_EXTI_LINE)){
+    LL_EXTI_ClearFlag(TRIG2_LL_EXTI_LINE);
+    Trigger_Callback(1);
   }
 }
 

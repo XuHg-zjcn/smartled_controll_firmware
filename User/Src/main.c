@@ -36,6 +36,7 @@
 #include "manchester.h"
 #include "command.h"
 #include "key.h"
+#include "trigger.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -67,7 +68,9 @@ int main(void)
   Key_Init();
   LED_Init();
   LED_SetOutputEnable(LED2, 1);
-  LED_SetOutputCompare(LED2, 512);
+  LED_SetOutputCompare(LED2, 300);
+  Trigger_Init();
+  Trigger_Set_PowerOff(30000);
   uint32_t i=0;
   while (1)
   {
