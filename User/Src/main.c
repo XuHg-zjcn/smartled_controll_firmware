@@ -67,8 +67,8 @@ int main(void)
   //ADC_Init();
   Key_Init();
   LED_Init();
-  LED_SetOutputEnable(LED2, 1);
-  LED_SetOutputCompare(LED2, 300);
+  LED_SetOutputEnable(LED_MAIN, 1);
+  LED_SetOutputCompare(LED_MAIN, 300);
   Trigger_Init();
   Trigger_Set_PowerOff(30000);
   uint32_t i=0;
@@ -85,8 +85,6 @@ int main(void)
       Manchester_encode(resp_buff, buff_tx_encode, resp_len_);
       RS485_Send(buff_tx_encode, resp_len_*2);
     }
-    /*i += rxlen;
-    LED_SetOutputCompare(LED4, (i%32)*(i%32));*/
   }
 }
 

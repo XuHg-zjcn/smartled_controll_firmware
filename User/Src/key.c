@@ -55,7 +55,7 @@ void Key_EXTI_Callback()
   if(delta>20 && stat==0 && prev_stat!=0){
     //刚才按下,现在弹起了
     if(delta < 500){
-      if(LED_GetOutputEnable(LED2) && Brigress_GetTargetPWM_Or_Curr()!=0){
+      if(LED_GetOutputEnable(LED_MAIN) && Brigress_GetTargetPWM_Or_Curr()!=0){
         Key_setPWM();
       }else{
 	Brigress_SetGradExpone(keep_pwm, 2000);

@@ -18,14 +18,9 @@
 #ifndef LED_H
 #define LED_H
 
-#include <stdint.h>
+#include "board_config.h"
 
-#define LED(x) (x-1)
-#define LED1  LED(1)
-#define LED2  LED(2)
-#define LED3  LED(3)
-#define LED4  LED(4)
-#define LED_COUNT (4)
+#include <stdint.h>
 
 void     LED_Init();
 void     LED_SetOutputEnable(int LEDx, int isEnable);

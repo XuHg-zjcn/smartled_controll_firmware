@@ -22,16 +22,7 @@
 #include "py32f0xx_ll_usart.h"
 #include "py32f0xx_ll_dma.h"
 
-#define TR_LL_GPIO_PIN    LL_GPIO_PIN_5
-#define TR_GPIO_PORT      GPIOB
 
-#define RXD_LL_GPIO_PIN   LL_GPIO_PIN_7
-#define RXD_GPIO_PORT     GPIOB
-#define RXD_LL_GPIO_AF    LL_GPIO_AF_0
-
-#define TXD_LL_GPIO_PIN   LL_GPIO_PIN_14
-#define TXD_GPIO_PORT     GPIOA
-#define TXD_LL_GPIO_AF    LL_GPIO_AF_1
 #define USARTx            USART1
 #define BAUDRATE          (500000)
 

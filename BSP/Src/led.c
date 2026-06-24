@@ -19,21 +19,6 @@
 #include "py32f0xx_ll_tim.h"
 #include "py32f0xx.h"
 
-//此处LEDx编号是PCB上印刷的粗体数字
-#define LED1_GPIO_PORT	GPIOA
-#define LED1_GPIO_PIN	GPIO_PIN_0
-#define LED2_GPIO_PORT	GPIOA
-#define LED2_GPIO_PIN   GPIO_PIN_13
-#define LED3_GPIO_PORT	GPIOA
-#define LED3_GPIO_PIN	GPIO_PIN_3
-#define LED4_GPIO_PORT	GPIOA
-#define LED4_GPIO_PIN	GPIO_PIN_1
-
-#define LED1_TIM_CHANNEL  TIM_CHANNEL_3
-#define LED2_TIM_CHANNEL  TIM_CHANNEL_2
-#define LED3_TIM_CHANNEL  TIM_CHANNEL_1
-#define LED4_TIM_CHANNEL  TIM_CHANNEL_4
-
 #define TIM_CHANNEL_HAL_TO_LL(x)  (1<<(x))
 #define LEDx_TO_LL_TIM_CHANNEL(x) (TIM_CHANNEL_HAL_TO_LL(map_led_to_channel[x]))
 #define LEDx_TO_HAL_TIM_CHANNEL(x) (map_led_to_channel[x])

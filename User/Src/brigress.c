@@ -60,14 +60,14 @@ void Brigress_Tick_Callback()
       mode = ChargeDisable;
     }
   }
-  LED_SetOutputCompare(LED2, pwm);
+  LED_SetOutputCompare(LED_MAIN, pwm);
 }
 
 //L(t) = L0 + (L'-L0)*t/tc       (0<=t<=tc)
 //TODO: 此函数降低亮度时会达到最高亮度，然后
 void Brigress_SetGradLinear(uint32_t target, uint32_t tc_ms)
 {
-  uint32_t old_pwm = LED_GetOutputCompare(LED2);
+  uint32_t old_pwm = LED_GetOutputCompare(LED_MAIN);
   int32_t delta = target - old_pwm;
   mode = ChargeDisable;
   c1 = ((int64_t)(delta<<16))/tc_ms;
@@ -82,7 +82,7 @@ void Brigress_SetGradLinear(uint32_t target, uint32_t tc_ms)
 void Brigress_SetGradExpone(uint32_t target, uint32_t tc_ms)
 {
   const uint32_t const2_27_LN2 = round(((double)(1<<27))/M_LN2);
-  uint32_t old_pwm = LED_GetOutputCompare(LED2);
+  uint32_t old_pwm = LED_GetOutputCompare(LED_MAIN);
   int32_t delta = target - old_pwm;
   mode = ChargeDisable;
   c1 = delta;
@@ -96,7 +96,7 @@ void Brigress_SetGradExpone(uint32_t target, uint32_t tc_ms)
 uint32_t Brigress_GetTargetPWM_Or_Curr()
 {
   if(mode == ChargeDisable){
-    return LED_GetOutputCompare(LED2);
+    return LED_GetOutputCompare(LED_MAIN);
   }else{
     return target_pwm;
   }

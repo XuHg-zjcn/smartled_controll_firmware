@@ -17,13 +17,7 @@
 *************************************************************************/
 #ifndef ADC_H
 #define ADC_H
-
-#define GPIO_PORT_ADC_CURR    GPIOA
-#define LL_GPIO_PIN_ADC_CURR  LL_GPIO_PIN_6
-#define LL_ADC_CHANNEL_CURR   LL_ADC_CHANNEL_6
-#define GPIO_PORT_ADC_VOLT    GPIOA
-#define LL_GPIO_PIN_ADC_VOLT  LL_GPIO_PIN_7
-#define LL_ADC_CHANNEL_VOLT   LL_ADC_CHANNEL_7
+#include "board_config.h"
 
 #define LL_DMA_CHANNEL_ADC    LL_DMA_CHANNEL_3
 

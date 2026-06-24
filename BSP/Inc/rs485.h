@@ -20,11 +20,7 @@
 
 #include <stdint.h>
 #include "py32f0xx.h"
-
-//编码后的RS485地址
-#define RS485_ADDR   (0x01)
-#define RS485_ADDR1  (0xA9)
-#define RS485_ADDR2  (0xAA)
+#include "board_config.h"
 
 typedef enum{
   RS485_On_IdleORMute,

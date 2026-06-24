@@ -19,18 +19,7 @@
 #define TRIGGER_H
 
 #include <stdint.h>
-
-#define N_TRIGGER 2
-
-#define TRIG1_GPIO_PORT    GPIOF
-#define TRIG1_LL_GPIO_PIN  LL_GPIO_PIN_0
-#define TRIG1_LL_EXTI_CONFIG  LL_EXTI_CONFIG_LINE0
-#define TRIG1_LL_EXTI_LINE    LL_EXTI_LINE_0
-
-#define TRIG2_GPIO_PORT    GPIOF
-#define TRIG2_LL_GPIO_PIN  LL_GPIO_PIN_1
-#define TRIG2_LL_EXTI_CONFIG  LL_EXTI_CONFIG_LINE1
-#define TRIG2_LL_EXTI_LINE    LL_EXTI_LINE_1
+#include "board_config.h"
 
 typedef struct{
   uint32_t keep_time;
