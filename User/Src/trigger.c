@@ -19,18 +19,16 @@
 #include "py32f0xx_ll_bus.h"
 #include "py32f0xx_ll_gpio.h"
 #include "py32f0xx_ll_exti.h"
+#include "params.h"
 #include "trigger.h"
 #include "brigress.h"
 
+#define sett (params.trig_sett)
+
+extern Params_t params;
 uint32_t auto_off_tick = 0;
 int auto_off_i;
 trigger_handler handlers[N_TRIGGER];
-trigger_setting sett = {
-  .keep_time = 30000,
-  .brigress_on = 300,
-  .tau_turn_on = 2000,
-  .tau_turn_off = 30000,
-};
 
 void Trigger_Init()
 {
@@ -52,9 +50,21 @@ void Trigger_Init()
 
   NVIC_SetPriority(EXTI0_1_IRQn, 3);
   NVIC_EnableIRQ(EXTI0_1_IRQn);
-  
-  handlers[0].isEnabled = 1;
-  handlers[1].isEnabled = 1;
+}
+
+void Trigger_Entry_TrigMode()
+{
+  for(int i=0;i<N_TRIGGER;i++){
+    handlers[i].isEnabled = 1;
+  }
+}
+
+void Trigger_Exit_TrigMode()
+{
+  for(int i=0;i<N_TRIGGER;i++){
+    handlers[i].isEnabled = 0;
+  }
+  auto_off_tick = 0;
 }
 
 void Trigger_Set_PowerOff(uint32_t ms)

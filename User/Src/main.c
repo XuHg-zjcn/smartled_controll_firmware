@@ -37,6 +37,7 @@
 #include "command.h"
 #include "key.h"
 #include "trigger.h"
+#include "params.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -46,6 +47,7 @@ uint8_t buff_rx_decode[32];
 extern uint8_t buff_rx[64];
 extern volatile uint32_t buff_rxlen;
 extern uint8_t resp_buff[MAXSIZE_RESP];
+extern Params_t params;
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -66,11 +68,17 @@ int main(void)
   RS485_Init();
   //ADC_Init();
   Key_Init();
+  Params_Init();
   LED_Init();
   LED_SetOutputEnable(LED_MAIN, 1);
   LED_SetOutputCompare(LED_MAIN, 300);
   Trigger_Init();
-  Trigger_Set_PowerOff(30000);
+  if(params.light_mode == Light_Mode_Trig){
+    Trigger_Entry_TrigMode();
+    Trigger_Set_PowerOff(params.trig_sett.keep_time);
+  }else{
+    Trigger_Exit_TrigMode();
+  }
   uint32_t i=0;
   while (1)
   {

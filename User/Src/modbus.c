@@ -1,7 +1,10 @@
 #include "modbus.h"
 #include "mbcrc.h"
+#include "params.h"
+#include <string.h>
 
 #define __weak __attribute__((weak))
+const char SaveParaMagic[8] __attribute__((aligned(4))) = "SavePara";
 
 //此处需要重载
 __weak int MB_ReadCoilCB_single(uint16_t addr)
@@ -196,6 +199,12 @@ int MB_ProcessRecv(const uint8_t *pIn, uint16_t size, uint8_t *pOut)
     addr = (pIn[2]<<8) | pIn[3];
     num = (pIn[4]<<8) | pIn[5];
     retval = MB_WriteHoldCB(addr, num, pIn+6);
+    break;
+  case MB_CUSTOM_COMMAND:
+    if(memcmp(pIn+2, SaveParaMagic, sizeof(SaveParaMagic)) == 0){
+      Params_Write_To_Flash();
+    }
+    retval = 0;
     break;
   default:
     break;

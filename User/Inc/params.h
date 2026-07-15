@@ -1,5 +1,5 @@
 /************************************************************************
- * 触发感应控制
+ * 参数加载和储存
  * Copyright (C) 2026  Xu Ruijun
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,30 +15,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  ************************************************************************/
-#ifndef TRIGGER_H
-#define TRIGGER_H
+#ifndef PARAMS_H
+#define PARAMS_H
 
-#include <stdint.h>
-#include "board_config.h"
+#include "trigger.h"
+
+#define PARAMS_MAGIC           (0x6d506c73)
+#define PARAMS_MAGIC_OVERWRITE (0x00006c73)
+
+typedef enum{
+  Light_Mode_Off = 0,
+  Light_Mode_Keep,
+  Light_Mode_Trig, //触发模式
+}Light_Mode;
 
 typedef struct{
-  uint32_t keep_time;
-  uint32_t brigress_on;
-  uint32_t tau_turn_on;
-  uint32_t tau_turn_off;
-}trigger_setting;
+  uint32_t magic;         //magic头
+  uint16_t length;        //长度
+  uint16_t count;         //写入计数
+  uint32_t write_ts;      //写入UNIX时间
+  Light_Mode light_mode;  //灯光模式
+  trigger_setting trig_sett;//触发设置
+}Params_t;
 
-typedef struct{
-  int isEnabled;
-  uint32_t auto_off_tick;
-  uint32_t trig_count;
-}trigger_handler;
-
-void Trigger_Init();
-void Trigger_Entry_TrigMode();
-void Trigger_Exit_TrigMode();
-void Trigger_Set_PowerOff(uint32_t ms);
-void Trigger_Callback(int index);
-void Trigger_Tick_Callback();
+void Params_Init();
+void Params_Load_Default();
+void Params_set(int pos, uint16_t data);
+void Params_Write_To_Flash();
 
 #endif

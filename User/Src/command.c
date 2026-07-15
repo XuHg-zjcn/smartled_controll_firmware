@@ -20,45 +20,56 @@
 #include <string.h>
 #include "led.h"
 #include "modbus.h"
+#include "params.h"
 
 uint8_t resp_buff[MAXSIZE_RESP];
 extern uint16_t adc_isum, adc_vsum;
+extern Params_t params;
 
 int MB_ReadCoilCB_single(uint16_t addr)
 {
-  if(addr >= 4){
-    return MB_ERR_ILL_ADDR;
-  }
-  if(LED_GetOutputEnable(addr)){
-    return 1;
+  if((addr >= 0) && (addr < 4)){
+    if(LED_GetOutputEnable(addr)){
+      return 1;
+    }else{
+      return 0;
+    }
   }else{
-    return 0;
+    return MB_ERR_ILL_ADDR;
   }
 }
 
 int MB_WriteCoilCB_single(uint16_t addr, int state)
 {
-  if(addr >= 4){
+  if((addr >= 0) && (addr < 4)){
+    LED_SetOutputEnable(addr, state);
+    return 0;
+  }else{
     return MB_ERR_ILL_ADDR;
   }
-  LED_SetOutputEnable(addr, state);
   return 0;
 }
 
 int MB_ReadHoldCB_single(uint16_t addr)
 {
-  if(addr >= 4){
+  if((addr >= 0) && (addr < 4)){
+    return LED_GetOutputCompare(addr);
+  }else if((addr > 16) && (addr < 16+(sizeof(Params_t)/2))){
+    return ((uint16_t *)&params)[addr-16];
+  }else{
     return MB_ERR_ILL_ADDR;
   }
-  return LED_GetOutputCompare(addr);
 }
 
 int MB_WriteHoldCB_single(uint16_t addr, uint16_t value)
 {
-  if(addr >= 4){
+  if((addr >= 0) && (addr < 4)){
+    LED_SetOutputCompare(addr, value);
+  }else if((addr > 16) && (addr < 16+(sizeof(Params_t)/2))){
+    Params_set(addr-16, value);
+  }else{
     return MB_ERR_ILL_ADDR;
   }
-  LED_SetOutputCompare(addr, value);
   return 0;
 }
 
