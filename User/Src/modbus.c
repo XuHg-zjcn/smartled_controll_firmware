@@ -27,11 +27,13 @@ __weak int MB_ReadInputCB_single(uint16_t addr)
   return MB_ERR_ILL_ADDR;
 }
 
+//state: 0 or 1
 __weak int MB_WriteCoilCB_single(uint16_t addr, int state)
 {
   return MB_ERR_ILL_ADDR;
 }
 
+//value: 0x0000 to 0xFFFF
 __weak int MB_WriteHoldCB_single(uint16_t addr, int value)
 {
   return MB_ERR_ILL_ADDR;
@@ -43,6 +45,9 @@ static int ReadBits_fromsingle(uint16_t addr, uint16_t num, uint8_t *data, int (
   uint32_t tmp_cnt = 0;
   uint8_t tmp = 0;
   int nbyte = 0;
+  if((num==0x0000) || (num>0x07D0)){
+    return MB_ERR_ILL_VALUE;
+  }
   while(remain--){
     int state = func(addr++);
     if(state == 0 || state == 1){
@@ -72,6 +77,9 @@ static int ReadWords_fromsingle(uint16_t addr, uint16_t num, uint8_t *data, int 
 {
   int tmp;
   uint16_t remain = num;
+  if((num==0x0000) || (num>0x007D)){
+    return MB_ERR_ILL_VALUE;
+  }
   while(remain--){
     tmp = func(addr++);
     if(0 <= tmp && tmp <= 65535){
@@ -157,7 +165,7 @@ __weak int MB_WriteHoldCB(uint16_t addr, uint16_t num, const uint8_t *data)
 int MB_ProcessRecv(const uint8_t *pIn, uint16_t size, uint8_t *pOut)
 {
   uint16_t addr, num;
-  int retval = MB_ERR_ILL_FUNC;
+  int retval = MB_ERR_ILL_FUNC; // <0: errcode, =0 no data output, >0 byte count
   uint32_t resplen;
   pOut[0] = pIn[0];
   pOut[1] = pIn[1];
@@ -184,7 +192,13 @@ int MB_ProcessRecv(const uint8_t *pIn, uint16_t size, uint8_t *pOut)
     break;
   case MB_WRITE_COIL_SINGL:
     addr = (pIn[2]<<8) | pIn[3];
-    retval = MB_WriteCoilCB(addr, 1, pIn+4);
+    if((pIn[4]==0xFF) && (pIn[5]==0x00)){
+       retval = MB_WriteCoilCB_single(addr, 1);
+    }else if((pIn[4]==0x00) && (pIn[5]==0x00)){
+       retval = MB_WriteCoilCB_single(addr, 0);
+    }else{
+       retval = MB_ERR_ILL_VALUE;
+    }
     break;
   case MB_WRITE_RHOLD_SINGL:
     addr = (pIn[2]<<8) | pIn[3];
@@ -193,12 +207,20 @@ int MB_ProcessRecv(const uint8_t *pIn, uint16_t size, uint8_t *pOut)
   case MB_WRITE_COIL_MULTI:
     addr = (pIn[2]<<8) | pIn[3];
     num = (pIn[4]<<8) | pIn[5];
-    retval = MB_WriteCoilCB(addr, num, pIn+6);
+    if(pIn[6] != (num+7)/8){
+      retval = MB_ERR_ILL_VALUE;
+    }else{
+      retval = MB_WriteCoilCB(addr, num, pIn+7);
+    }
     break;
   case MB_WRITE_RHOLD_MULTI:
     addr = (pIn[2]<<8) | pIn[3];
     num = (pIn[4]<<8) | pIn[5];
-    retval = MB_WriteHoldCB(addr, num, pIn+6);
+    if(pIn[6] != num*2){
+      retval = MB_ERR_ILL_VALUE;
+    }else{
+      retval = MB_WriteHoldCB(addr, num, pIn+7);
+    }
     break;
   case MB_CUSTOM_COMMAND:
     if(memcmp(pIn+2, SaveParaMagic, sizeof(SaveParaMagic)) == 0){
@@ -213,7 +235,10 @@ int MB_ProcessRecv(const uint8_t *pIn, uint16_t size, uint8_t *pOut)
     pOut[1] |= 0x80;
     pOut[2] = (-retval)&0xff;
     resplen = 3;
-  }else{
+  }else if(retval == 0){
+    memcpy(pOut+2, pIn+2, 4);
+    resplen = 2+4;
+  }else if(retval > 0){
     pOut[2] = retval;
     resplen = 3+retval;
   }

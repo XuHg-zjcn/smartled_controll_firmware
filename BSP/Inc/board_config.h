@@ -49,7 +49,7 @@
 #define LED3  LED(3)
 #define LED4  LED(4)
 #define LED_COUNT (4)
-#define LED_MAIN  LED2
+#define LED_MAIN  LED1
 
 
 /******************/

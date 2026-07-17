@@ -66,7 +66,7 @@ i = 0
 while True:
     compval = preset_pwm[i%len(preset_pwm)]
     print(compval)
-    cmd = b'\x01\x06\x00\x01' + int.to_bytes(compval, 2, 'big')
+    cmd = b'\x01\x06\x00\x00' + int.to_bytes(compval, 2, 'big')
     checksum = crc_calc(cmd)
     cmd_withcrc = cmd + int.to_bytes(checksum, 2, 'little')
     s.write(cmd_withcrc)
