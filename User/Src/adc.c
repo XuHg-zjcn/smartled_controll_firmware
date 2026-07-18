@@ -67,14 +67,15 @@ static void ADC_AdcConfig(void)
   LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
 
   /* Configure pin 4 as analog input */
-  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_ADC_CURR|LL_GPIO_PIN_ADC_VOLT, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_ADC_CURR, LL_GPIO_MODE_ANALOG);
+  LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_ADC_VOLT, LL_GPIO_MODE_ANALOG);
 
   /* ADC channel and clock source should be configured when ADEN=0, others should be configured when ADSTART=0 */
   /* Configure internal conversion channel */
   LL_ADC_SetCommonPathInternalCh(__LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_PATH_INTERNAL_NONE);
 
   /* Set ADC clock */
-  LL_ADC_SetClock(ADC1, LL_ADC_CLOCK_SYNC_PCLK_DIV1);
+  LL_ADC_SetClock(ADC1, LL_ADC_CLOCK_SYNC_PCLK_DIV2);
 
   /* Set 12-bit resolution */
   LL_ADC_SetResolution(ADC1, LL_ADC_RESOLUTION_12B);
@@ -248,6 +249,8 @@ static void ADC_DmaConfig(void)
   //已经在其他代码中开启此中断
   //NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0);
   //NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+
+  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_ADC);
 }
 
 void ADC_Init()
@@ -258,6 +261,7 @@ void ADC_Init()
   ADC_AdcConfig();
   ADC_AdcEnable();
   ADC_TimerInit();
+  LL_ADC_REG_StartConversion(ADC1);
 }
 
 void ADC_DMA_TC_Callback()

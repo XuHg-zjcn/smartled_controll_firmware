@@ -33,8 +33,9 @@ print(client.write_registers(address=ADDR_LED, values=[100,], device_id=1))
 time.sleep(1)
 
 print('读取电压电流')
-print(client.read_input_registers(address=0x0010, count=2, device_id=1))
-time.sleep(1)
+for i in range(10):
+    print(client.read_input_registers(address=0x0010, count=2, device_id=1))
+    time.sleep(0.1)
 
 print('关灯')
 print(client.write_coils(address=ADDR_LED, values=[0], device_id=1))

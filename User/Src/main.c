@@ -66,7 +66,7 @@ int main(void)
   APP_SystemClockConfig(); 
 
   RS485_Init();
-  //ADC_Init();
+  ADC_Init();
   Key_Init();
   Params_Init();
   LED_Init();
