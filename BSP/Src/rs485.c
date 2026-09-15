@@ -159,11 +159,14 @@ void USART1_IRQHandler()
   }
   if(LL_USART_IsEnabledIT_IDLE(USARTx) && LL_USART_IsActiveFlag_IDLE(USARTx)){
     uint8_t byte = LL_USART_ReceiveData8(USARTx); //清除IDLE位
-    LL_USART_DisableDMAReq_RX(USARTx);
-    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_RX);
-    buff_rxlen = sizeof(buff_rx) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_RX);
-    rs485_stat = RS485_On_IdleORMute;
-    LL_USART_EnableIT_RXNE(USARTx);
+    LL_USART_DisableIT_IDLE(USARTx);
+    if(rs485_stat == RS485_On_Recevice) {
+      LL_USART_DisableDMAReq_RX(USARTx);
+      LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_RX);
+      buff_rxlen = sizeof(buff_rx) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_RX);
+      rs485_stat = RS485_On_IdleORMute;
+      LL_USART_EnableIT_RXNE(USARTx);
+    }
   }
 }
 

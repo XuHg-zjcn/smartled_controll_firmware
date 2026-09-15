@@ -84,7 +84,10 @@ int main(void)
   {
     while(buff_rxlen == 0);
     uint32_t rxlen = buff_rxlen;
-    buff_rxlen = 0;
+    if(rxlen < 10){
+      buff_rxlen = 0;
+      continue;
+    }
     Manchester_decode(buff_rx+1, buff_rx_decode+1, rxlen/2);
     buff_rxlen = 0; //接收缓存区的内容不再使用了，可以接收新数据了
     buff_rx_decode[0] = RS485_ADDR;
