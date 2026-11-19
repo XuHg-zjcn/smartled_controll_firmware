@@ -34,8 +34,10 @@ typedef struct{
   uint16_t length;        //长度
   uint16_t count;         //写入计数
   uint32_t write_ts;      //写入UNIX时间
-  Light_Mode light_mode;  //灯光模式
-  trigger_setting trig_sett;//触发设置
+  uint32_t trig_en_bitmap;
+  trigger_setting trig_poweron;//触发设置
+  trigger_setting trig_key;//触发设置
+  trigger_setting trig_ext;//触发设置
 }Params_t;
 
 void Params_Init();

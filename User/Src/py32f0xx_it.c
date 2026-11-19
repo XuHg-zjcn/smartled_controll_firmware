@@ -40,6 +40,7 @@
 #include "key.h"
 #include "brigress.h"
 #include "trigger.h"
+#include "params.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +50,7 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private user code ---------------------------------------------------------*/
 /* External variables --------------------------------------------------------*/
+extern Params_t params;
 
 /******************************************************************************/
 /*           Cortex-M0+ Processor Interruption and Exception Handlers          */ 
@@ -132,11 +134,15 @@ void EXTI0_1_IRQHandler(void)
 {
   if(LL_EXTI_IsActiveFlag(TRIG1_LL_EXTI_LINE)){
     LL_EXTI_ClearFlag(TRIG1_LL_EXTI_LINE);
-    Trigger_Callback(0);
+    if(params.trig_en_bitmap & (1<<0)){
+      Trigger_Exec(&params.trig_ext);
+    }
   }
   if(LL_EXTI_IsActiveFlag(TRIG2_LL_EXTI_LINE)){
     LL_EXTI_ClearFlag(TRIG2_LL_EXTI_LINE);
-    Trigger_Callback(1);
+    if(params.trig_en_bitmap & (1<<1)){
+      Trigger_Exec(&params.trig_ext);
+    }
   }
 }
 

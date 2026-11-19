@@ -27,8 +27,8 @@
 
 extern Params_t params;
 uint32_t auto_off_tick = 0;
-int auto_off_i;
-trigger_handler handlers[N_TRIGGER];
+uint32_t auto_off_tau;
+
 
 void Trigger_Init()
 {
@@ -52,41 +52,28 @@ void Trigger_Init()
   NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 
-void Trigger_Entry_TrigMode()
+void Trigger_Exec(trigger_setting *p)
 {
-  for(int i=0;i<N_TRIGGER;i++){
-    handlers[i].isEnabled = 1;
+  uint32_t tick = HAL_GetTick();
+  if(!LED_GetOutputEnable(LED_MAIN)){
+    LED_SetOutputEnable(LED_MAIN, 1);
+  }
+  Brigress_SetGradExpone(p->brigress_on, p->tau_turn_on);
+  if((p->keep_time != UINT32_MAX) && (tick + p->keep_time > auto_off_tick)){
+    auto_off_tick = tick + p->keep_time;
+    auto_off_tau = p->tau_turn_off;
   }
 }
 
-void Trigger_Exit_TrigMode()
+void Trigger_cancal_auto_off()
 {
-  for(int i=0;i<N_TRIGGER;i++){
-    handlers[i].isEnabled = 0;
-  }
   auto_off_tick = 0;
-}
-
-void Trigger_Set_PowerOff(uint32_t ms)
-{
-  auto_off_tick = HAL_GetTick() + ms;
-}
-
-void Trigger_Callback(int index)
-{
-  trigger_handler *h = &handlers[index];
-  if(h->isEnabled != 0){
-    uint32_t tick = HAL_GetTick();
-    Brigress_SetGradExpone(sett.brigress_on, sett.tau_turn_on);
-    auto_off_tick = tick + sett.keep_time;
-    h->trig_count++;
-  }
 }
 
 void Trigger_Tick_Callback()
 {
   if((auto_off_tick != 0) && (HAL_GetTick() >= auto_off_tick)){
     auto_off_tick = 0;
-    Brigress_SetGradExpone(0, sett.tau_turn_off);
+    Brigress_SetGradExpone(0, auto_off_tau);
   }
 }

@@ -4,9 +4,10 @@
 #include "py32f0xx_ll_exti.h"
 #include "led.h"
 #include "brigress.h"
+#include "params.h"
+#include "trigger.h"
 
-
-uint32_t keep_pwm = 512; //在关灯状态保持PWM值，用于开灯时恢复
+extern Params_t params;
 uint32_t prev_tick = 0;
 int prev_stat = 0;
 const uint32_t preset_pwm[] = {18, 40, 90, 202, 455, 1024}; /*round(1024/2.25**(5-i))*/
@@ -55,13 +56,18 @@ void Key_EXTI_Callback()
   if(delta>20 && stat==0 && prev_stat!=0){
     //刚才按下,现在弹起了
     if(delta < 500){
+      //短按，小于500ms
       if(LED_GetOutputEnable(LED_MAIN) && Brigress_GetTargetPWM_Or_Curr()!=0){
+	//灯已经处于点亮状态，按键来调节亮度
         Key_setPWM();
       }else{
-	Brigress_SetGradExpone(keep_pwm, 2000);
+	//灯现在没有点亮
+	Trigger_Exec(&params.trig_key);
       }
     }else{
-      keep_pwm = Brigress_GetTargetPWM_Or_Curr();
+      //长按，关灯
+      params.trig_key.brigress_on = Brigress_GetTargetPWM_Or_Curr();
+      Trigger_cancal_auto_off();
       Brigress_SetGradExpone(0, 2000);
     }
   }

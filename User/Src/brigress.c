@@ -47,6 +47,9 @@ void Brigress_Tick_Callback()
   if(t_ms >= t_max){
     pwm = target_pwm;
     mode = ChargeDisable;
+    if(pwm == 0){
+      LED_SetOutputEnable(LED_MAIN, 0);
+    }
   }else{
     switch(mode){
     case ChargeLinear:

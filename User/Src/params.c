@@ -27,12 +27,22 @@ const Params_t params_default = {
   .length = sizeof(Params_t) - 6,
   .count = 0,
   .write_ts = 0,
-  .light_mode = Light_Mode_Keep,
-  .trig_sett =
-    {.keep_time = 30000,
-     .brigress_on = 300,
-     .tau_turn_on = 2000,
-     .tau_turn_off = 30000},
+  .trig_en_bitmap = 0xffffffff,
+  .trig_poweron = {
+    .brigress_on = 100,
+    .keep_time =    30*1000,
+    .tau_turn_on =   5*1000,
+    .tau_turn_off = 30*1000},
+  .trig_key = {
+    .brigress_on = 300,
+    .keep_time = 4*3600*1000,
+    .tau_turn_on =    2*1000,
+    .tau_turn_off =  30*1000},
+  .trig_ext = {
+    .brigress_on = 200,
+    .keep_time =    30*1000,
+    .tau_turn_on =   5*1000,
+    .tau_turn_off = 30*1000},
 };
 
 Params_t params; //当前参数,可临时修改
@@ -68,15 +78,7 @@ void Params_Load_Default()
 void Params_set(int pos, uint16_t data)
 {
   uint16_t *p = ((uint16_t *)&params) + pos;
-  if((void *)p == (void *)&params.light_mode){
-    if(data == Light_Mode_Trig){
-      Trigger_Entry_TrigMode();
-    }else{
-      Trigger_Exit_TrigMode();
-    }
-  }else{
-    *p = data;
-  }
+  *p = data;
 }
 
 void Params_Write_To_Flash()

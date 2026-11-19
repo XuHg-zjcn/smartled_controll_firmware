@@ -71,13 +71,10 @@ int main(void)
   Params_Init();
   LED_Init();
   LED_SetOutputEnable(LED_MAIN, 1);
-  LED_SetOutputCompare(LED_MAIN, 300);
+  LED_SetOutputCompare(LED_MAIN, 0);
   Trigger_Init();
-  if(params.light_mode == Light_Mode_Trig){
-    Trigger_Entry_TrigMode();
-    Trigger_Set_PowerOff(params.trig_sett.keep_time);
-  }else{
-    Trigger_Exit_TrigMode();
+  if(params.trig_poweron.brigress_on != 0){
+    Trigger_Exec(&params.trig_poweron);
   }
   uint32_t i=0;
   while (1)

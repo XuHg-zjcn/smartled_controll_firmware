@@ -22,23 +22,16 @@
 #include "board_config.h"
 
 typedef struct{
+  uint16_t brigress_on;
+  uint16_t resved;
   uint32_t keep_time;
-  uint32_t brigress_on;
   uint32_t tau_turn_on;
   uint32_t tau_turn_off;
 }trigger_setting;
 
-typedef struct{
-  int isEnabled;
-  uint32_t auto_off_tick;
-  uint32_t trig_count;
-}trigger_handler;
-
 void Trigger_Init();
-void Trigger_Entry_TrigMode();
-void Trigger_Exit_TrigMode();
-void Trigger_Set_PowerOff(uint32_t ms);
-void Trigger_Callback(int index);
+void Trigger_Exec(trigger_setting *p);
+void Trigger_cancal_auto_off();
 void Trigger_Tick_Callback();
 
 #endif
