@@ -123,6 +123,8 @@ int RS485_Send(uint8_t *p, uint16_t size)
     return 1;
   }
   rs485_stat = RS485_On_Trasmit;
+  //需要适当提前开启发送，否则起始位前高电平段不足1时钟周期
+  LL_GPIO_SetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
   LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_TX);
   LL_DMA_ClearFlag_GI1(DMA1);
   LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_TX, (uint32_t)p);
@@ -131,7 +133,6 @@ int RS485_Send(uint8_t *p, uint16_t size)
   LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_TX);
 
   LL_USART_ClearFlag_TC(USARTx);
-  LL_GPIO_SetOutputPin(TR_GPIO_PORT, TR_LL_GPIO_PIN);
   LL_USART_EnableDMAReq_TX(USARTx);
   //完成发送后在`DMA1_Channel1_IRQHandler`拉低TR_GPIO
   return 0;
@@ -158,7 +159,7 @@ void USART1_IRQHandler()
     }
   }
   if(LL_USART_IsEnabledIT_IDLE(USARTx) && LL_USART_IsActiveFlag_IDLE(USARTx)){
-    uint8_t byte = LL_USART_ReceiveData8(USARTx); //清除IDLE位
+    UNUSED(LL_USART_ReceiveData8(USARTx)); //清除IDLE位
     LL_USART_DisableIT_IDLE(USARTx);
     if(rs485_stat == RS485_On_Recevice) {
       LL_USART_DisableDMAReq_RX(USARTx);
