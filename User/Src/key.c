@@ -60,9 +60,11 @@ void Key_EXTI_Callback()
       if(LED_GetOutputEnable(LED_MAIN) && Brigress_GetTargetPWM_Or_Curr()!=0){
 	//灯已经处于点亮状态，按键来调节亮度
         Key_setPWM();
+        Trigger_Set_PowerOff(params.trig_key.keep_time,
+			     params.trig_key.tau_turn_off); //延长自动关闭时间
       }else{
 	//灯现在没有点亮
-	Trigger_Exec(&params.trig_key);
+	Trigger_Exec(&params.trig_key); //已包含亮度缓变和自动关闭
       }
     }else{
       //长按，关灯

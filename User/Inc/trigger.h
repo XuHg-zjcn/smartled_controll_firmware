@@ -30,6 +30,7 @@ typedef struct{
 }trigger_setting;
 
 void Trigger_Init();
+void Trigger_Set_PowerOff(uint32_t keep_time, uint32_t tau_turn_off);
 void Trigger_Exec(trigger_setting *p);
 void Trigger_cancal_auto_off();
 void Trigger_Tick_Callback();

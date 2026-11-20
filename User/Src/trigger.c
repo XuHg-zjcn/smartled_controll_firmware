@@ -52,17 +52,24 @@ void Trigger_Init()
   NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 
-void Trigger_Exec(trigger_setting *p)
+void Trigger_Set_PowerOff(uint32_t keep_time, uint32_t tau_turn_off)
 {
   uint32_t tick = HAL_GetTick();
+  if(keep_time == UINT32_MAX){ //永不关闭
+    auto_off_tick = UINT32_MAX;
+  }else if(tick + keep_time > auto_off_tick){
+    auto_off_tick = tick + keep_time;
+    auto_off_tau = tau_turn_off;
+  }
+}
+
+void Trigger_Exec(trigger_setting *p)
+{
   if(!LED_GetOutputEnable(LED_MAIN)){
     LED_SetOutputEnable(LED_MAIN, 1);
   }
   Brigress_SetGradExpone(p->brigress_on, p->tau_turn_on);
-  if((p->keep_time != UINT32_MAX) && (tick + p->keep_time > auto_off_tick)){
-    auto_off_tick = tick + p->keep_time;
-    auto_off_tau = p->tau_turn_off;
-  }
+  Trigger_Set_PowerOff(p->keep_time, p->tau_turn_off);
 }
 
 void Trigger_cancal_auto_off()
@@ -72,7 +79,7 @@ void Trigger_cancal_auto_off()
 
 void Trigger_Tick_Callback()
 {
-  if((auto_off_tick != 0) && (HAL_GetTick() >= auto_off_tick)){
+  if((auto_off_tick != 0) && (HAL_GetTick() >= auto_off_tick) && (auto_off_tick != UINT32_MAX)){
     auto_off_tick = 0;
     Brigress_SetGradExpone(0, auto_off_tau);
   }
